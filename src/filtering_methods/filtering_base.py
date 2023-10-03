@@ -1,17 +1,9 @@
-import numpy as np
-import matplotlib.pyplot as plt
-import tqdm
-import src.sampling_methods.sampling_utils as sampling_utils
 from src.dataset import Dataset
 from abc import ABC
-from copy import deepcopy
-import xgboost as xgb
-import random
 from dataclasses import dataclass
 
 from sklearn.model_selection import KFold
-from sklearn.metrics import accuracy_score
-from sklearn.linear_model import LogisticRegression
+
 
 @dataclass
 class FilteringResults:
