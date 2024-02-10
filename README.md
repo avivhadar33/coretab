@@ -22,7 +22,7 @@ from coretab.coreset_algorithms import CoreTabXGB
 coretab_xgb = CoreTabXGB()
 X_filter, y_filter = coretab_xgb.create_coreset(X_train, y_train)
 ```
-Use the "Training Enhancement" inference method to maximize you algorithm performance.
+Use the "Training Enhancement" inference method to maximize your algorithm performance.
 
 ```py
 import xgboost as xgb  # or any model you want
