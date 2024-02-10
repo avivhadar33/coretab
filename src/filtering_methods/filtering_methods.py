@@ -22,7 +22,7 @@ class NoneFilter(FilteringExperiment):
     def sample_func(self, dataset: Dataset, p):
         s = time.time()
         self.model.fit(dataset.X_train, dataset.y_train)
-        run_time = time.time() - s
+        run_time = time.time() - sx
         score = dataset.metric(dataset.y_test, self.model.predict(dataset.X_test))
         results = FilteringResults(score=score,
                                    run_time=run_time,
@@ -112,17 +112,6 @@ class FilterEachIterXgboostPathSampleFinal(FilteringExperiment):
         self.X_train_filtered = None
         self.y_train_filtered = None
         self.original_sizes = None
-
-    def reset_attributes(self) -> None:
-        self.model = None
-        self.X_leaves = None
-        self.groups = None
-        self.hom_groups = dict()
-        self.hom_groups_candidates = []
-        self.results = []
-        self.A = None
-        self.X_train_filtered = None
-        self.y_train_filtered = None
 
     def get_dmatrix(self, X, y=None):
         if self.params.get('enable_categorical', False):
@@ -253,24 +242,6 @@ class FilterEachIterXgboostPathSampleFinal(FilteringExperiment):
             return target_values[0]
         else:
             return round(pred_value)
-
-    def predict(self, X_test):
-        # pred_leaves = self.model.predict(xgb.DMatrix(data=(X_test)), pred_leaf=True)
-        pred_leaves = self.model.predict(self.get_dmatrix(X_test), pred_leaf=True)
-
-        pred_leaves_df = pd.DataFrame(pred_leaves, index=X_test.index,
-                                      columns=[f'leaf_{i}' for i in range(len(self.model.get_dump()))])
-
-        if self.prediction_model is None:
-            preds = self.model.predict(xgb.DMatrix(data=X_test))
-        else:
-            preds = self.prediction_model.predict(X_test)
-        pred_leaves_df.loc[:, 'pred_value'] = preds
-
-        pred_leaves_df.loc[:, 'joined'] = pred_leaves_df.apply(
-            lambda row: '_'.join([str(row[c]) for c in pred_leaves_df.columns if c.startswith('leaf')]), axis=1)
-        predictions = pred_leaves_df.apply(lambda row: self._predict_by_leafs(row['joined'], row['pred_value']), axis=1)
-        return predictions
 
     def get_predictions_df(self, X_test):
         pred_leaves = self.model.predict(xgb.DMatrix(data=(X_test)), pred_leaf=True)
