@@ -14,7 +14,7 @@ Clone the repo
 <!-- USAGE EXAMPLES -->
 ## Usage
 
-This is how you create a coreset using coretab.
+This is how you create a coreset using coretab
 
 ```py
 from coretab.coreset_algorithms import CoreTabXGB
