@@ -329,7 +329,7 @@ class CoreTabDT:
                                                     group=self.X_leaves[
                                                         self.X_leaves['leaf_id'] == row['leaf_id']].index.tolist()) for
                                       index, row in groups.iterrows()]
-        indexes_to_filter = self.choose_groups(dataset)
+        indexes_to_filter = self.choose_groups(y_train)
         indexes_to_keep = sorted(set(X_train.index).difference(set(indexes_to_filter)))
         X_train_filtered = X_train.loc[indexes_to_keep, :]
         y_train_filtered = y_train[X_train_filtered.index]
