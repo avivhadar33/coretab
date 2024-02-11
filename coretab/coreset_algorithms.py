@@ -34,6 +34,7 @@ class CoreTabXGB:
         self.A = None
         self.X_leaves = None
         self.groups = None
+        self.original_sizes = None
         self.target_col = 'target_col'
 
     def get_dmatrix(self, X, y=None):
@@ -176,6 +177,7 @@ class CoreTabXGB:
     def create_coreset(self, X_train: pd.DataFrame, y_train):
 
         self.X_leaves = pd.DataFrame(y_train.values, columns=[self.target_col], index=y_train.index)
+        self.original_sizes = dict(y_train.value_counts())
         self.hom_groups = dict()
         self.groups = None
 
@@ -214,6 +216,7 @@ class CoreTabDT:
         self.model = None
         self.X_leaves = None
         self.groups = None
+        self.original_sizes = None
         self.target_col = 'target_col'
 
     def choose_groups(self, y_train):
@@ -308,6 +311,7 @@ class CoreTabDT:
     def create_coreset(self, X_train: pd.DataFrame, y_train):
 
         self.X_leaves = pd.DataFrame(y_train.values, columns=[self.target_col], index=y_train.index)
+        self.original_sizes = dict(y_train.value_counts())
         self.hom_groups = dict()
         self.groups = None
 
