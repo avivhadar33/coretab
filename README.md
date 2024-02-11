@@ -32,9 +32,4 @@ model.fit(X_filter, y_filter)
 te_predictions = coretab_xgb.te_predict(X_test, prediction_model=model)
 ```
 
-<!-- CONTACT -->
-## Contact
-
-Aviv Hadar - aviv0040@gamil.com
-
 Project Link: https://github.com/avivhadar33/coretab
