@@ -120,14 +120,14 @@ class CoreTabXGB:
             if key is not None and label != groups_dict[key].label:
                 groups_mistakes_dict[key] += 1
 
-        groups_lst = [(groups_dict[key], groups_mistakes_dict[key]) for key in groups_dict.keys()]
-        groups_0 = [(g[1], g[0].size, g[0].label) for g in groups_lst if g[0].label == 0]
-        groups_1 = [(g[1], g[0].size, g[0].label) for g in groups_lst if g[0].label == 1]
+        groups_lst = [(groups_dict[key], groups_mistakes_dict[key], key) for key in groups_dict.keys()]
+        groups_0 = [(g[1], g[0].size, g[0].label, g[2]) for g in groups_lst if g[0].label == 0]
+        groups_1 = [(g[1], g[0].size, g[0].label, g[2]) for g in groups_lst if g[0].label == 1]
         train_size_1 = self.original_sizes[1]
         train_size_0 = self.original_sizes[0]
         if groups_0:
             mistakes_0_df = pd.DataFrame(data=groups_0,
-                                         columns=['group_mistakes', 'group_size', 'label'])
+                                         columns=['group_mistakes', 'group_size', 'label', 'group_id'])
             mistakes_0_df['total_mistakes'] = mistakes_0_df['group_mistakes'].cumsum()
             mistakes_0_df['total_size'] = mistakes_0_df['group_size'].cumsum()
             mistakes_0_df['percent_remained'] = (train_size_0 - mistakes_0_df['total_size']) / train_size_0
@@ -139,7 +139,7 @@ class CoreTabXGB:
 
         if groups_1:
             mistakes_1_df = pd.DataFrame(data=groups_1,
-                                         columns=['group_mistakes', 'group_size', 'label'])
+                                         columns=['group_mistakes', 'group_size', 'label', 'group_id'])
             mistakes_1_df['total_mistakes'] = mistakes_1_df['group_mistakes'].cumsum()
             mistakes_1_df['total_size'] = mistakes_1_df['group_size'].cumsum()
             mistakes_1_df['percent_remained'] = (train_size_1 - mistakes_1_df['total_size']) / train_size_1
@@ -166,6 +166,17 @@ class CoreTabXGB:
             return target_values[0]
         else:
             return round(pred_value)
+
+    def filter_dataset(self, X, y):
+        pred_leaves = self.model.predict(self.get_dmatrix(X), pred_leaf=True)
+        pred_leaves_df = pd.DataFrame(pred_leaves, index=X.index,
+                                      columns=[f'leaf_{i}' for i in range(len(self.model.get_dump()))])
+        pred_leaves_df.loc[:, 'joined'] = pred_leaves_df.apply(
+            lambda row: '_'.join([str(row[c]) for c in pred_leaves_df.columns if c.startswith('leaf')]), axis=1)
+        pred_leaves_df.loc[:, 'pred_by_groups'] = pred_leaves_df.apply(
+            lambda row: self._is_in_homogeneous_group(row['joined']), axis=1)
+        X_filtered = X[pred_leaves_df['pred_by_groups'].isna()]
+        return X_filtered, y[X_filtered.index]
 
     def filter_df_and_dmatrix(self, dmatrix: xgb.DMatrix, data: pd.DataFrame, indexes, index_name='index'):
         new_data = data.reset_index()
@@ -249,14 +260,14 @@ class CoreTabDT:
             if key is not None and label != groups_dict[key].label:
                 groups_mistakes_dict[key] += 1
 
-        groups_lst = [(groups_dict[key], groups_mistakes_dict[key]) for key in groups_dict.keys()]
-        groups_0 = [(g[1], g[0].size, g[0].label) for g in groups_lst if g[0].label == 0]
-        groups_1 = [(g[1], g[0].size, g[0].label) for g in groups_lst if g[0].label == 1]
+        groups_lst = [(groups_dict[key], groups_mistakes_dict[key], key) for key in groups_dict.keys()]
+        groups_0 = [(g[1], g[0].size, g[0].label, g[2]) for g in groups_lst if g[0].label == 0]
+        groups_1 = [(g[1], g[0].size, g[0].label, g[2]) for g in groups_lst if g[0].label == 1]
         train_size_1 = self.original_sizes[1]
         train_size_0 = self.original_sizes[0]
         if groups_0:
             mistakes_0_df = pd.DataFrame(data=groups_0,
-                                         columns=['group_mistakes', 'group_size', 'label'])
+                                         columns=['group_mistakes', 'group_size', 'label', 'group_id'])
             mistakes_0_df['total_mistakes'] = mistakes_0_df['group_mistakes'].cumsum()
             mistakes_0_df['total_size'] = mistakes_0_df['group_size'].cumsum()
             mistakes_0_df['percent_remained'] = (train_size_0 - mistakes_0_df['total_size']) / train_size_0
@@ -268,7 +279,7 @@ class CoreTabDT:
 
         if groups_1:
             mistakes_1_df = pd.DataFrame(data=groups_1,
-                                         columns=['group_mistakes', 'group_size', 'label'])
+                                         columns=['group_mistakes', 'group_size', 'label', 'group_id'])
             mistakes_1_df['total_mistakes'] = mistakes_1_df['group_mistakes'].cumsum()
             mistakes_1_df['total_size'] = mistakes_1_df['group_size'].cumsum()
             mistakes_1_df['percent_remained'] = (train_size_1 - mistakes_1_df['total_size']) / train_size_1
@@ -307,6 +318,14 @@ class CoreTabDT:
         predictions = pred_leaves_df.apply(lambda row: self._predict_by_leafs(row['leaf_id'], row['pred_value']),
                                            axis=1)
         return predictions
+
+    def filter_dataset(self, X, y):
+        pred_leaves = self.model.apply(X)
+        pred_leaves_df = pd.DataFrame(pred_leaves, index=X.index, columns=['leaf_id'])
+        pred_leaves_df.loc[:, 'pred_by_groups'] = pred_leaves_df.apply(
+            lambda row: self._is_in_homogeneous_group(row['leaf_id']), axis=1)
+        X_filtered = X[pred_leaves_df['pred_by_groups'].isna()]
+        return X_filtered, y[X_filtered.index]
 
     def create_coreset(self, X_train: pd.DataFrame, y_train):
 
