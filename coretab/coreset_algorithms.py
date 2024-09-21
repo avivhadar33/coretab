@@ -167,6 +167,20 @@ class CoreTabXGB:
         else:
             return round(pred_value)
 
+    def te_predict(self, X_test, prediction_model):
+
+        pred_leaves = self.model.predict(self.get_dmatrix(X_test), pred_leaf=True)
+        pred_leaves_df = pd.DataFrame(pred_leaves, index=X_test.index,
+                                      columns=[f'leaf_{i}' for i in range(len(self.model.get_dump()))])
+
+        preds = prediction_model.predict(X_test)
+        pred_leaves_df.loc[:, 'pred_value'] = preds
+
+        pred_leaves_df.loc[:, 'joined'] = pred_leaves_df.apply(
+            lambda row: '_'.join([str(row[c]) for c in pred_leaves_df.columns if c.startswith('leaf')]), axis=1)
+        predictions = pred_leaves_df.apply(lambda row: self._predict_by_leafs(row['joined'], row['pred_value']), axis=1)
+        return predictions
+
     def filter_dataset(self, X, y):
         pred_leaves = self.model.predict(self.get_dmatrix(X), pred_leaf=True)
         pred_leaves_df = pd.DataFrame(pred_leaves, index=X.index,
