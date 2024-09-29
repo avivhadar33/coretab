@@ -179,10 +179,6 @@ def test_dataset_gpt(dataset: Dataset, base_experiment_name, dataset_content, tr
                                               dataset.y_train)
     X_train_s_xgb, y_train_s_xgb = create_train_set(dataset.X_train.loc[X_xgb.index, :], y_xgb, train_sample_per_class)
 
-    clf_default = GptClassifier(dataset_content, experiment_name=base_experiment_name + '_default',
-                                model='gpt-4o-mini-2024-07-18')
-    ft_defualt_obj = clf_default.fit(X_train_s, y_train_s)
-
     clf_dt = GptClassifier(dataset_content, experiment_name=base_experiment_name + '_dt',
                            model='gpt-4o-mini-2024-07-18')
     ft_dt_obj = clf_dt.fit(X_train_s_dt, y_train_s_dt)
@@ -190,6 +186,10 @@ def test_dataset_gpt(dataset: Dataset, base_experiment_name, dataset_content, tr
     clf_xgb = GptClassifier(dataset_content, experiment_name=base_experiment_name + '_xgb',
                             model='gpt-4o-mini-2024-07-18')
     ft_xgb_obj = clf_xgb.fit(X_train_s_xgb, y_train_s_xgb)
+
+    clf_default = GptClassifier(dataset_content, experiment_name=base_experiment_name + '_default',
+                                model='gpt-4o-mini-2024-07-18')
+    ft_defualt_obj = clf_default.fit(X_train_s, y_train_s)
 
     wait_to_models_fintune([ft_defualt_obj.id, ft_dt_obj.id, ft_xgb_obj.id])
 
@@ -257,17 +257,46 @@ gpt_promts = {
     'di': """Based on the following health and lifestyle information (features), determine if this person is likely to have diabetes. Please respond only with 'Yes' or 'No'
         
 Here are the health and lifestyle information of the person (seperated by |):    
-<features>{features_encoded}</feature>
+<features>{features_encoded}</features>
 
 Respond using this format:
 <answer>'Yes' or 'No'</answer>""",
+
     'bf': """Based on the information (features), determine if this bank account is a fraud. Please respond only with 'Yes' or 'No' ('Yes' if it is fraud)
         
 Here are the information of account (seperated by |):    
-<features>{features_encoded}</feature>
+<features>{features_encoded}</features>
+
+Respond using this format:
+<answer>'Yes' or 'No'</answer>""",
+
+    'ct': """Based on the information (features), determine if this 30 x 30 meter cell piece of forest cover type is - Spruce/Fir.
+Please respond only with 'Yes' or 'No' ('Yes' if it is Spruce/Fir)
+        
+Here are the information of the forest piece (seperated by |):    
+<features>{features_encoded}</features>
+
+Respond using this format:
+<answer>'Yes' or 'No'</answer>""",
+
+    'ln': """Based on the information (features), determine if this applicant will default the loan or not.
+Please respond only with 'Yes' or 'No' ('Yes' if he will default the loan)
+        
+Here are the information of the loan and the applicant (seperated by |):    
+<features>{features_encoded}</features>
+
+Respond using this format:
+<answer>'Yes' or 'No'</answer>""",
+
+    'cc': """Based on the information (features), determine if this credit card transaction is a fraud.
+Please respond only with 'Yes' or 'No' ('Yes' if it is fraud)
+        
+Here are the PCA components of the information of the transaction (seperated by |):    
+<features>{features_encoded}</features>
 
 Respond using this format:
 <answer>'Yes' or 'No'</answer>"""
+
 }
 
 
