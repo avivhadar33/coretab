@@ -295,8 +295,15 @@ Here are the PCA components of the information of the transaction (seperated by 
 <features>{features_encoded}</features>
 
 Respond using this format:
-<answer>'Yes' or 'No'</answer>"""
+<answer>'Yes' or 'No'</answer>""",
+    'hp': """Based on the information (features) of this High-Energy Physics simulation, determine if this particle info is a signal or background source.
+Please respond only with 'Yes' or 'No' ('Yes' if it is a signal particle)
+        
+Here are the information of the particle (seperated by |):    
+<features>{features_encoded}</features>
 
+Respond using this format:
+<answer>'Yes' or 'No'</answer>"""
 }
 
 
