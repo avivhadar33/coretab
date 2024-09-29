@@ -325,4 +325,5 @@ def main():
     return gpt_results
 
 
-
+if __name__ == "__main__":
+    main()
