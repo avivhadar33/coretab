@@ -302,15 +302,16 @@ Respond using this format:
 
 def main():
     df = pd.read_csv('Diabetes dataset path')
+    dataset_shortcut = 'di'
     target_col = 'Diabetes_binary'
-    promt = gpt_promts['di']
+    promt = gpt_promts[dataset_shortcut]
     gpt_results = []
 
     for i in range(4):
         X_train, X_test, y_train, y_test = train_test_split(df.drop(target_col, axis=1), df[target_col],
                                                             test_size=0.2, shuffle=True)
         dataset_di = Dataset(df, X_train, y_train, X_test, y_test, target_col, f1_score)
-        returned_obj = test_dataset_gpt(dataset_di, 'experiment_name' + '_di', promt)
+        returned_obj = test_dataset_gpt(dataset_di, 'experiment_name_' + dataset_shortcut, promt)
         gpt_results.append(returned_obj)
 
     print_results(gpt_results)
