@@ -1,8 +1,11 @@
 numpy
 pandas
 xgboost
-sklearn
+scikit-learn
 pyahocorasick
 statsmodels
 tqdm
 matplotlib
+ipykernel
+plotly
+nbformat
