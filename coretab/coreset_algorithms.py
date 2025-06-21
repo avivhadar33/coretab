@@ -8,6 +8,10 @@ import ahocorasick
 from statsmodels.stats.proportion import proportion_confint
 from sklearn.tree import DecisionTreeClassifier
 
+# Tree Plot Utils
+from copy import deepcopy
+import matplotlib.pyplot as plt
+
 @dataclass
 class FilteredGroup:
     key: str
@@ -36,6 +40,7 @@ class CoreTabXGB:
         self.groups = None
         self.original_sizes = None
         self.target_col = 'target_col'
+
 
     def get_dmatrix(self, X, y=None):
         if self.params.get('enable_categorical', False):
@@ -244,6 +249,10 @@ class CoreTabDT:
         self.original_sizes = None
         self.target_col = 'target_col'
 
+        # Interactive coreset 
+        self.columns = None
+        self.manually_added_nodes = []
+
     def choose_groups(self, y_train):
         sorted_candidates = sorted(self.hom_groups_candidates, key=lambda g: g.size, reverse=True)
 
@@ -326,7 +335,7 @@ class CoreTabDT:
         if prediction_model is not None:
             preds = prediction_model.predict(X_test)
         else:
-            raise
+            raise Exception("Prediction model is not provided")
         pred_leaves_df.loc[:, 'pred_value'] = preds
 
         predictions = pred_leaves_df.apply(lambda row: self._predict_by_leafs(row['leaf_id'], row['pred_value']),
@@ -347,6 +356,7 @@ class CoreTabDT:
         self.original_sizes = dict(y_train.value_counts())
         self.hom_groups = dict()
         self.groups = None
+        self.columns = X_train.columns
 
         if not self.params:
             self.model = DecisionTreeClassifier()
